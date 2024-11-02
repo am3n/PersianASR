@@ -5,8 +5,6 @@
 
 <b>Android persian automatic speech recognition library based on Alphacephei VOSK</b>
 
----
-
 ## Resources
 
 * [VOSK Speech Recognition Toolkit](https://github.com/alphacep/vosk-api)
