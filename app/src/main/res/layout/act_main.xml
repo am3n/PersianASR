@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingVertical="16dp"
+    tools:ignore="HardcodedText">
+
+    <androidx.appcompat.widget.AppCompatToggleButton
+        android:id="@+id/btnStartContinuously"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginVertical="2dp"
+        android:paddingVertical="24dp"
+        android:textOn="recognition continuously"
+        android:textOff="recognition continuously"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnStartWithTimeout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginVertical="2dp"
+        android:paddingVertical="24dp"
+        android:text="recognition with timeout 10 s" />
+
+</LinearLayout>

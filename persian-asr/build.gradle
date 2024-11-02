@@ -5,12 +5,11 @@ plugins {
 
 
 tasks.register('genUUID') {
-    def uuid = UUID.randomUUID().toString()
-    def odir = file("$buildDir/generated/assets/model-small-fa-0.42")
-    def ofile = file("$odir/uuid")
+    def outDir = file("$buildDir/generated/assets/model-small-fa-0.42")
+    def outFile = file("$outDir/uuid")
     doLast {
-        mkdir odir
-        ofile.text = uuid
+        mkdir outDir
+        outFile.text = UUID.randomUUID().toString()
     }
 }
 
@@ -23,15 +22,8 @@ android {
 
     defaultConfig {
         minSdk 21
-        multiDexEnabled true
         ndk { abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86_64', 'x86' }
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+        consumerProguardFiles 'proguard-rules.pro'
     }
 
     sourceSets {
@@ -51,12 +43,9 @@ android {
 }
 
 dependencies {
-
     implementation 'androidx.core:core-ktx:1.15.0'
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'androidx.multidex:multidex:2.0.1'
-
     implementation 'net.java.dev.jna:jna:5.15.0@aar'
     implementation 'com.alphacephei:vosk-android:0.3.47@aar'
-
+    implementation 'com.google.code.gson:gson:2.11.0'
 }
