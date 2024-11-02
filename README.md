@@ -3,7 +3,7 @@
 ![MinAPI](https://img.shields.io/badge/API-21%2B-blue)
 [![Release](https://jitpack.io/v/am3n/PersianASR.svg)](https://jitpack.io/#am3n/PersianASR)
 
-<b>Persian automatic speech recognition library based on Alphacephei VOSK</b>
+<b>Android persian automatic speech recognition library based on Alphacephei VOSK</b>
 
 ---
 
