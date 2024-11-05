@@ -104,7 +104,7 @@ class PersianSpeechRecognizer private constructor(
 
         override fun onPartialResult(hypothesis: String) {
             if (isCanceled) return
-            Log.d(TAG, "onPartialResult()  $hypothesis")
+            if (debug) Log.d(TAG, "onPartialResult()  $hypothesis")
             val partial = gson.fromJson(hypothesis, Partial::class.java)
             if (partial.text != lastPartial.text) {
                 if (partial.text.isNotBlank() && !isSpeeching) {
@@ -123,7 +123,7 @@ class PersianSpeechRecognizer private constructor(
 
         override fun onResult(hypothesis: String) {
             if (isCanceled) return
-            Log.d(TAG, "onResult()  $hypothesis")
+            if (debug) Log.d(TAG, "onResult()  $hypothesis")
             if (isSpeeching) {
                 isSpeeching = false
                 listener?.onEndOfSpeech()
@@ -137,7 +137,7 @@ class PersianSpeechRecognizer private constructor(
 
         override fun onTimeout() {
             if (isCanceled) return
-            Log.d(TAG, "onTimeout()")
+            if (debug) Log.d(TAG, "onTimeout()")
             isCanceled = true
             service.stop()
             if (isSpeeching) {
@@ -153,7 +153,7 @@ class PersianSpeechRecognizer private constructor(
 
         override fun onError(exception: Exception) {
             if (isCanceled) return
-            Log.e(TAG, "onPartialResult()", exception)
+            if (debug) Log.e(TAG, "onPartialResult()", exception)
             listener?.onError(ERROR_CLIENT)
         }
 
@@ -175,7 +175,7 @@ class PersianSpeechRecognizer private constructor(
         try {
             LibVosk.setLogLevel(if (debug) LogLevel.DEBUG else LogLevel.INFO)
         } catch (t: Throwable) {
-            Log.e(TAG, "initialize()", t)
+            if (debug) Log.e(TAG, "initialize()", t)
         }
 
         val model = try {
@@ -187,7 +187,7 @@ class PersianSpeechRecognizer private constructor(
                 )
             )
         } catch (t: Throwable) {
-            Log.e(TAG, "initialize()", t)
+            if (debug) Log.e(TAG, "initialize()", t)
             listener?.onError(ERROR_FAILED_UNPACK_MODEL)
             return false
         }
@@ -201,7 +201,7 @@ class PersianSpeechRecognizer private constructor(
                 throw Error("Manifest.permission.RECORD_AUDIO isn't granted")
             }
         } catch (t: Throwable) {
-            Log.e(TAG, "initialize()", t)
+            if (debug) Log.e(TAG, "initialize()", t)
             listener?.onError(ERROR_INSUFFICIENT_PERMISSIONS)
             return false
         }
@@ -219,7 +219,7 @@ class PersianSpeechRecognizer private constructor(
             recognizer.setPartialWords(false)
             recognizer.setWords(false)
         } catch (t: Throwable) {
-            Log.e(TAG, "initialize()", t)
+            if (debug) Log.e(TAG, "initialize()", t)
             listener?.onError(ERROR_FAILED_CREATE_RECOGNIZER)
             return false
         }
@@ -228,7 +228,7 @@ class PersianSpeechRecognizer private constructor(
             service = SpeechService(recognizer, sampleRate)
             return true
         } catch (t: Throwable) {
-            Log.e(TAG, "initialize()", t)
+            if (debug) Log.e(TAG, "initialize()", t)
             listener?.onError(ERROR_FAILED_CREATE_SERVICE)
             return false
         }

@@ -106,11 +106,11 @@ class MainActivity : ComponentActivity() {
             }
 
             override fun onResult(result: Result) {
-                Log.d("Me-$TAG", "asr > onResults()  \n${result.data.joinToString("\n")}")
+                Log.d("Me-$TAG", "asr > onResults()  \n\t${result.data.joinToString("\n\t")}")
             }
 
             override fun onFinalResult(results: List<Result>) {
-                Log.d("Me-$TAG", "asr > onFinalResults()  \n${results.joinToString("\n")}")
+                Log.d("Me-$TAG", "asr > onFinalResults()  \n\t${results.joinToString("\n\t")}")
             }
 
             override fun onError(error: Int) {
@@ -133,7 +133,7 @@ class MainActivity : ComponentActivity() {
                 maxResults = 5,
                 partialResults = true,
                 listener = recognizerListener,
-                quality = PersianSpeechRecognizer.QUALITY_HIGH,
+                quality = PersianSpeechRecognizer.QUALITY_LOW,
                 debug = true
             )
         }
