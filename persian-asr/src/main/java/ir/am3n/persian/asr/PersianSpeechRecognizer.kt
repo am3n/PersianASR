@@ -107,6 +107,7 @@ class PersianSpeechRecognizer private constructor(
             if (debug) Log.d(TAG, "onPartialResult()  $hypothesis")
             val partial = gson.fromJson(hypothesis, Partial::class.java)
             if (partial.text != lastPartial.text) {
+                lastPartial = partial
                 if (partial.text.isNotBlank() && !isSpeeching) {
                     isSpeeching = true
                     listener?.onBeginningOfSpeech()
@@ -117,8 +118,9 @@ class PersianSpeechRecognizer private constructor(
                 if (partialResults && partial.text.isNotBlank()) {
                     listener?.onPartialResult(partial)
                 }
+            } else {
+                lastPartial = partial
             }
-            lastPartial = partial
         }
 
         override fun onResult(hypothesis: String) {
@@ -271,15 +273,7 @@ class PersianSpeechRecognizer private constructor(
     @Synchronized
     fun stopListening() {
         if (::service.isInitialized) {
-            isCanceled = true
-            if (recognitionListener.isSpeeching) {
-                listener?.onEndOfSpeech()
-                recognitionListener.isSpeeching = false
-            }
-            val result = gson.fromJson(recognizer.result, Result::class.java)
-            listener?.onResult(result)
-            service.stop()
-            recognitionListener.clear()
+            recognitionListener.onTimeout()
         }
     }
 
