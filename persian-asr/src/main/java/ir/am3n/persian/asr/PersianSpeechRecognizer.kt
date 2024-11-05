@@ -250,6 +250,7 @@ class PersianSpeechRecognizer private constructor(
                 return
         recognitionListener.clear()
         isCanceled = false
+        recognizer.reset()
         service.startListening(recognitionListener, timeout.toInt())
         listener?.onReadyForSpeech()
     }
