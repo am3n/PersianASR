@@ -97,7 +97,7 @@ class PersianSpeechRecognizer private constructor(
         var isSpeeching = false
 
         fun clear() {
-            results.clear()
+            results = mutableListOf()
             lastPartial = Partial(text = "")
             isSpeeching = false
         }
@@ -138,7 +138,12 @@ class PersianSpeechRecognizer private constructor(
         override fun onTimeout() {
             if (isCanceled) return
             Log.d(TAG, "onTimeout()")
-            cancel()
+            isCanceled = true
+            service.stop()
+            if (isSpeeching) {
+                listener?.onEndOfSpeech()
+                isSpeeching = false
+            }
             if (lastPartial.text.isNotBlank()) {
                 results.add(lastPartial.asResult)
             }
