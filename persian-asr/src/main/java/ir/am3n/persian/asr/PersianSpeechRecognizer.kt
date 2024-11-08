@@ -142,6 +142,7 @@ class PersianSpeechRecognizer private constructor(
             if (debug) Log.d(TAG, "onTimeout()")
             isCanceled = true
             service.stop()
+            recognizer.reset()
             if (isSpeeching) {
                 listener?.onEndOfSpeech()
                 isSpeeching = false
