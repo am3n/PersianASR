@@ -263,6 +263,7 @@ class PersianSpeechRecognizer private constructor(
         if (::service.isInitialized) {
             isCanceled = true
             service.stop()
+            recognizer.reset()
             if (recognitionListener.isSpeeching) {
                 listener?.onEndOfSpeech()
                 recognitionListener.isSpeeching = false
