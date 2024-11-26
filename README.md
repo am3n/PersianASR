@@ -37,3 +37,12 @@ Add this lines to the `proguard-rules.pro`
 -dontwarn java.awt.HeadlessException
 -dontwarn java.awt.Window
 ```
+
+### Different languages
+
+If you want to load another language model, just download the 
+model from [VOSK Models](https://alphacephei.com/vosk/models) 
+and place it in your project assets folder with the name 
+`asr-model` and then **clean & rebuild**.
+
+See the [sample app](https://github.com/am3n/PersianASR/tree/master/app/src/main).
