@@ -5,7 +5,7 @@ plugins {
 
 
 tasks.register('genUUID') {
-    def outDir = file("$buildDir/generated/assets/model-small-fa-0.42")
+    def outDir = file("$buildDir/generated/assets/asr-model")
     def outFile = file("$outDir/uuid")
     doLast {
         mkdir outDir

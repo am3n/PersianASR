@@ -185,7 +185,7 @@ class PersianSpeechRecognizer private constructor(
             Model(
                 StorageService.sync(
                     context,
-                    "model-small-fa-0.42",
+                    "asr-model",
                     "persian-asr-model"
                 )
             )
