@@ -16,7 +16,7 @@ import org.vosk.android.SpeechService
 import org.vosk.android.StorageService
 
 class PersianSpeechRecognizer private constructor(
-    private val context: Context,
+    context: Context,
     private val maxResults: Int,
     private val partialResults: Boolean,
     private val listener: RecognitionListener?,
@@ -165,11 +165,11 @@ class PersianSpeechRecognizer private constructor(
     }
 
     init {
-        initialize()
+        initialize(context)
     }
 
     @Synchronized
-    private fun initialize(): Boolean {
+    private fun initialize(context: Context): Boolean {
 
         if (Looper.myLooper() == Looper.getMainLooper()) {
             throw Error("SpeechRecognizer shouldn't be used from the application's main thread")
@@ -249,8 +249,7 @@ class PersianSpeechRecognizer private constructor(
     @Synchronized
     fun startListening(timeout: Long = -1) {
         if (!::service.isInitialized)
-            if (!initialize())
-                return
+            throw Error("Service isn't initialized")
         recognitionListener.clear()
         isCanceled = false
         recognizer.reset()

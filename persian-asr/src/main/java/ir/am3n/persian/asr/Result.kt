@@ -20,4 +20,8 @@ data class Result(
         return Result(data.filter { it.text.isNotBlank() })
     }
 
+    override fun toString(): String {
+        return data.joinToString("\n")
+    }
+
 }
