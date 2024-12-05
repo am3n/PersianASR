@@ -8,12 +8,14 @@ import android.util.Log
 import androidx.annotation.IntDef
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
+import ir.am3n.persian.asr.Utils.accessField
 import org.vosk.LibVosk
 import org.vosk.LogLevel
 import org.vosk.Model
 import org.vosk.Recognizer
 import org.vosk.android.SpeechService
 import org.vosk.android.StorageService
+import kotlin.random.Random
 
 class PersianSpeechRecognizer private constructor(
     context: Context,
@@ -39,6 +41,8 @@ class PersianSpeechRecognizer private constructor(
         const val ERROR_INSUFFICIENT_PERMISSIONS = 9
         const val ERROR_FAILED_CREATE_RECOGNIZER = 20
         const val ERROR_FAILED_CREATE_SERVICE = 30
+
+        val INSTANCE_ID = Random.nextInt(999)
 
         fun createSpeechRecognizer(
             context: Context,
@@ -254,6 +258,9 @@ class PersianSpeechRecognizer private constructor(
         isCanceled = false
         recognizer.reset()
         service.startListening(recognitionListener, timeout.toInt())
+        (service.accessField("recognizerThread") as Thread).apply {
+            name = "Persian ASR thread [$INSTANCE_ID]"
+        }
         listener?.onReadyForSpeech()
     }
 
