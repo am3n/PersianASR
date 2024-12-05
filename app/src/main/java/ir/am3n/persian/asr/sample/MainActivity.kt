@@ -181,6 +181,8 @@ class MainActivity : ComponentActivity() {
             txt.text = ""
         }
 
+        //CpuStressful.start()
+
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -217,16 +219,19 @@ class MainActivity : ComponentActivity() {
             IntentFilter(ACTION_CONNECTION_STATE_CHANGED)
         )
 
-        registerReceiver(object : BroadcastReceiver() {
+        registerReceiver(
+            object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 intent ?: return
                 when (intent.getIntExtra(EXTRA_SCO_AUDIO_STATE, -2)) {
                     SCO_AUDIO_STATE_CONNECTING -> {
                         append("waiting for bluetooth sco ...")
                     }
+
                     SCO_AUDIO_STATE_CONNECTED -> {
                         append("bluetooth sco started")
                     }
+
                     SCO_AUDIO_STATE_DISCONNECTED -> {
                         val state = adapter.getProfileConnectionState(BluetoothProfile.HEADSET)
                         append("bluetooth sco disconnected,  headset-state: $state")
@@ -236,12 +241,15 @@ class MainActivity : ComponentActivity() {
                             checkHeadset()
                         }
                     }
+
                     SCO_AUDIO_STATE_ERROR -> {
                         append("bluetooth sco error")
                     }
                 }
             }
-        }, IntentFilter(ACTION_SCO_AUDIO_STATE_UPDATED))
+        },
+            IntentFilter(ACTION_SCO_AUDIO_STATE_UPDATED)
+        )
 
         initializeASR(
             if (tgbQuality.isChecked) PersianSpeechRecognizer.QUALITY_BEST
