@@ -36,7 +36,6 @@ import ir.am3n.persian.asr.RecognitionListener
 import ir.am3n.persian.asr.Result
 import kotlin.concurrent.thread
 
-@SuppressLint("MissingPermission")
 class MainActivity : ComponentActivity() {
 
     companion object {
@@ -55,6 +54,15 @@ class MainActivity : ComponentActivity() {
     private var ignoreCheckChange = false
 
     private val adapter = BluetoothAdapter.getDefaultAdapter()
+
+    private val permissions = mutableListOf(
+        Manifest.permission.RECORD_AUDIO,
+        Manifest.permission.BLUETOOTH
+    ).apply {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            add(Manifest.permission.BLUETOOTH_CONNECT)
+        }
+    }.toTypedArray()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -123,20 +131,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            @SuppressLint("InlinedApi")
             override fun onError(error: Int) {
                 Log.e("Me-$TAG", "asr > onError() code: $error", null)
                 append("error: $error")
                 if (error == PersianSpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS) {
-                    ActivityCompat.requestPermissions(
-                        this@MainActivity,
-                        arrayOf(
-                            Manifest.permission.RECORD_AUDIO,
-                            Manifest.permission.BLUETOOTH,
-                            Manifest.permission.BLUETOOTH_CONNECT
-                        ),
-                        1000
-                    )
+                    requestPermissions()
                 }
             }
 
@@ -180,8 +179,14 @@ class MainActivity : ComponentActivity() {
         }
 
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.RECORD_AUDIO), 1000)
+        var request = false
+        permissions.forEach {
+            if (ActivityCompat.checkSelfPermission(this, it) != PERMISSION_GRANTED) {
+                request = true
+            }
+        }
+        if (request) {
+            requestPermissions()
         } else {
             init()
         }
@@ -195,6 +200,14 @@ class MainActivity : ComponentActivity() {
         if (requestCode == 1000 && grantResults[0] == PERMISSION_GRANTED) {
             init()
         }
+    }
+
+    private fun requestPermissions() {
+        ActivityCompat.requestPermissions(
+            this@MainActivity,
+            permissions,
+            1000
+        )
     }
 
     private fun init() {
@@ -224,37 +237,47 @@ class MainActivity : ComponentActivity() {
             IntentFilter(ACTION_CONNECTION_STATE_CHANGED)
         )
 
-        registerReceiver(
-            object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                intent ?: return
-                when (intent.getIntExtra(EXTRA_SCO_AUDIO_STATE, -2)) {
-                    SCO_AUDIO_STATE_CONNECTING -> {
-                        append("waiting for bluetooth sco ...")
-                    }
+        if (ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_CONNECT) != PERMISSION_GRANTED) {
+            registerReceiver(
+                object : BroadcastReceiver() {
+                    override fun onReceive(context: Context?, intent: Intent?) {
+                        intent ?: return
+                        when (intent.getIntExtra(EXTRA_SCO_AUDIO_STATE, -2)) {
+                            SCO_AUDIO_STATE_CONNECTING -> {
+                                append("waiting for bluetooth sco ...")
+                            }
 
-                    SCO_AUDIO_STATE_CONNECTED -> {
-                        append("bluetooth sco started")
-                    }
+                            SCO_AUDIO_STATE_CONNECTED -> {
+                                append("bluetooth sco started")
+                            }
 
-                    SCO_AUDIO_STATE_DISCONNECTED -> {
-                        val state = adapter.getProfileConnectionState(BluetoothProfile.HEADSET)
-                        append("bluetooth sco disconnected,  headset-state: $state")
-                        if (state == BluetoothAdapter.STATE_CONNECTED) {
-                            val am = getSystemService(AUDIO_SERVICE) as AudioManager
-                            am.stopBluetoothSco()
-                            checkHeadset()
+                            SCO_AUDIO_STATE_DISCONNECTED -> {
+                                if (ActivityCompat.checkSelfPermission(
+                                        this@MainActivity,
+                                        Manifest.permission.BLUETOOTH_CONNECT
+                                    ) != PERMISSION_GRANTED
+                                ) {
+                                    requestPermissions()
+                                    return
+                                }
+                                val state = adapter.getProfileConnectionState(BluetoothProfile.HEADSET)
+                                append("bluetooth sco disconnected,  headset-state: $state")
+                                if (state == BluetoothAdapter.STATE_CONNECTED) {
+                                    val am = getSystemService(AUDIO_SERVICE) as AudioManager
+                                    am.stopBluetoothSco()
+                                    checkHeadset()
+                                }
+                            }
+
+                            SCO_AUDIO_STATE_ERROR -> {
+                                append("bluetooth sco error")
+                            }
                         }
                     }
-
-                    SCO_AUDIO_STATE_ERROR -> {
-                        append("bluetooth sco error")
-                    }
-                }
-            }
-        },
-            IntentFilter(ACTION_SCO_AUDIO_STATE_UPDATED)
-        )
+                },
+                IntentFilter(ACTION_SCO_AUDIO_STATE_UPDATED)
+            )
+        }
 
         initializeASR(
             if (tgbQuality.isChecked) PersianSpeechRecognizer.QUALITY_BEST
@@ -290,8 +313,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @SuppressLint("MissingPermission")
     private fun checkHeadset() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PERMISSION_GRANTED) {
+            requestPermissions()
+            return
+        }
         val state = adapter.getProfileConnectionState(BluetoothProfile.HEADSET)
         if (state == BluetoothAdapter.STATE_CONNECTING) {
             Handler(Looper.getMainLooper()).postDelayed({
