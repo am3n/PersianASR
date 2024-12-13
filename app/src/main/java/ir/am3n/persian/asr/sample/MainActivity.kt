@@ -142,8 +142,6 @@ class MainActivity : ComponentActivity() {
 
         }
 
-        init()
-
         tgbQuality.setOnCheckedChangeListener { _, isChecked ->
             if (tgbStartContinuously.isChecked) {
                 tgbStartContinuously.isChecked = false
@@ -179,6 +177,13 @@ class MainActivity : ComponentActivity() {
 
         btnClearLogs.setOnClickListener {
             txt.text = ""
+        }
+
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this@MainActivity, arrayOf(Manifest.permission.RECORD_AUDIO), 1000)
+        } else {
+            init()
         }
 
         //CpuStressful.start()
