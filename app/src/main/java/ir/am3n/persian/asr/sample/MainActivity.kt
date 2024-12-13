@@ -1,7 +1,6 @@
 package ir.am3n.persian.asr.sample
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.bluetooth.BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -42,6 +41,8 @@ class MainActivity : ComponentActivity() {
         const val TAG = "MainActivity"
     }
 
+    // todo if bt not support mic (like smartwatches), don't try to switch to bt mode & mute mic
+
     private lateinit var tgbQuality: AppCompatToggleButton
     private lateinit var tgbStartContinuously: AppCompatToggleButton
     private lateinit var btnStartWithTimeout: AppCompatButton
@@ -54,6 +55,7 @@ class MainActivity : ComponentActivity() {
     private var ignoreCheckChange = false
 
     private val adapter = BluetoothAdapter.getDefaultAdapter()
+    private val audioManager by lazy { getSystemService(AUDIO_SERVICE) as AudioManager }
 
     private val permissions = mutableListOf(
         Manifest.permission.RECORD_AUDIO,
@@ -197,7 +199,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 1000 && grantResults[0] == PERMISSION_GRANTED) {
+        if (requestCode == 1000 && grantResults.isNotEmpty() && grantResults[0] == PERMISSION_GRANTED) {
             init()
         }
     }
@@ -237,9 +239,11 @@ class MainActivity : ComponentActivity() {
             IntentFilter(ACTION_CONNECTION_STATE_CHANGED)
         )
 
-        if (ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_CONNECT) != PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+            ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_CONNECT) != PERMISSION_GRANTED) {
             registerReceiver(
                 object : BroadcastReceiver() {
+                    private var failures = 0
                     override fun onReceive(context: Context?, intent: Intent?) {
                         intent ?: return
                         when (intent.getIntExtra(EXTRA_SCO_AUDIO_STATE, -2)) {
@@ -248,23 +252,23 @@ class MainActivity : ComponentActivity() {
                             }
 
                             SCO_AUDIO_STATE_CONNECTED -> {
+                                failures = 0
                                 append("bluetooth sco started")
                             }
 
                             SCO_AUDIO_STATE_DISCONNECTED -> {
-                                if (ActivityCompat.checkSelfPermission(
-                                        this@MainActivity,
-                                        Manifest.permission.BLUETOOTH_CONNECT
-                                    ) != PERMISSION_GRANTED
-                                ) {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                                    ActivityCompat.checkSelfPermission(this@MainActivity, Manifest.permission.BLUETOOTH_CONNECT) != PERMISSION_GRANTED) {
                                     requestPermissions()
                                     return
                                 }
+                                failures++
                                 val state = adapter.getProfileConnectionState(BluetoothProfile.HEADSET)
                                 append("bluetooth sco disconnected,  headset-state: $state")
-                                if (state == BluetoothAdapter.STATE_CONNECTED) {
-                                    val am = getSystemService(AUDIO_SERVICE) as AudioManager
-                                    am.stopBluetoothSco()
+                                audioManager.stopBluetoothSco()
+                                audioManager.isMicrophoneMute = false
+                                audioManager.mode = AudioManager.MODE_NORMAL
+                                if (failures <= 3 && state == BluetoothAdapter.STATE_CONNECTED) {
                                     checkHeadset()
                                 }
                             }
@@ -314,7 +318,8 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun checkHeadset() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PERMISSION_GRANTED) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_CONNECT) != PERMISSION_GRANTED) {
             requestPermissions()
             return
         }
@@ -326,10 +331,9 @@ class MainActivity : ComponentActivity() {
         }
         if (state == BluetoothAdapter.STATE_CONNECTED) {
             Handler(Looper.getMainLooper()).postDelayed({
-                val am = getSystemService(AUDIO_SERVICE) as AudioManager
-                am.mode = AudioManager.MODE_IN_COMMUNICATION
-                am.setMicrophoneMute(true)
-                am.startBluetoothSco()
+                audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+                audioManager.isMicrophoneMute = true
+                audioManager.startBluetoothSco()
             }, 500)
         }
     }
