@@ -176,6 +176,7 @@ class PersianSpeechRecognizer private constructor(
     private fun initialize(context: Context): Boolean {
 
         if (Looper.myLooper() == Looper.getMainLooper()) {
+            Log.d(TAG, "error main looper")
             throw Error("SpeechRecognizer shouldn't be used from the application's main thread")
         }
 
@@ -252,8 +253,10 @@ class PersianSpeechRecognizer private constructor(
      */
     @Synchronized
     fun startListening(timeout: Long = -1) {
-        if (!::service.isInitialized)
+        if (!::service.isInitialized) {
+            Log.d(TAG, "startListening()")
             throw Error("Service isn't initialized")
+        }
         recognitionListener.clear()
         isCanceled = false
         recognizer.reset()
