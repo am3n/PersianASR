@@ -41,7 +41,8 @@ class MainActivity : ComponentActivity() {
         const val TAG = "MainActivity"
     }
 
-    // todo if bt not support mic (like smartwatches), don't try to switch to bt mode & mute mic
+    private val bluetoothAdapter by lazy { BluetoothAdapter.getDefaultAdapter() }
+    private val audioManager by lazy { getSystemService(AUDIO_SERVICE) as AudioManager }
 
     private lateinit var tgbQuality: AppCompatToggleButton
     private lateinit var tgbStartContinuously: AppCompatToggleButton
@@ -53,9 +54,6 @@ class MainActivity : ComponentActivity() {
     private lateinit var recognizer: PersianSpeechRecognizer
     private lateinit var recognizerListener: RecognitionListener
     private var ignoreCheckChange = false
-
-    private val adapter = BluetoothAdapter.getDefaultAdapter()
-    private val audioManager by lazy { getSystemService(AUDIO_SERVICE) as AudioManager }
 
     private val permissions = mutableListOf(
         Manifest.permission.RECORD_AUDIO,
@@ -69,6 +67,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.act_main)
+
+        audioManager.isMicrophoneMute = false
 
         tgbQuality = findViewById(R.id.btnQuality)
         tgbStartContinuously = findViewById(R.id.btnStartContinuously)
@@ -263,10 +263,9 @@ class MainActivity : ComponentActivity() {
                                     return
                                 }
                                 failures++
-                                val state = adapter.getProfileConnectionState(BluetoothProfile.HEADSET)
+                                val state = bluetoothAdapter.getProfileConnectionState(BluetoothProfile.HEADSET)
                                 append("bluetooth sco disconnected,  headset-state: $state")
                                 audioManager.stopBluetoothSco()
-                                audioManager.isMicrophoneMute = false
                                 audioManager.mode = AudioManager.MODE_NORMAL
                                 if (failures <= 3 && state == BluetoothAdapter.STATE_CONNECTED) {
                                     checkHeadset()
@@ -323,7 +322,7 @@ class MainActivity : ComponentActivity() {
             requestPermissions()
             return
         }
-        val state = adapter.getProfileConnectionState(BluetoothProfile.HEADSET)
+        val state = bluetoothAdapter.getProfileConnectionState(BluetoothProfile.HEADSET)
         if (state == BluetoothAdapter.STATE_CONNECTING) {
             Handler(Looper.getMainLooper()).postDelayed({
                 checkHeadset()
@@ -331,8 +330,7 @@ class MainActivity : ComponentActivity() {
         }
         if (state == BluetoothAdapter.STATE_CONNECTED) {
             Handler(Looper.getMainLooper()).postDelayed({
-                audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
-                audioManager.isMicrophoneMute = true
+                audioManager.mode = AudioManager.MODE_IN_CALL
                 audioManager.startBluetoothSco()
             }, 500)
         }
