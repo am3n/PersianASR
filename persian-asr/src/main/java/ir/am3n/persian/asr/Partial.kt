@@ -5,8 +5,8 @@ import com.google.gson.annotations.SerializedName
 
 @Keep
 data class Partial(
-    @SerializedName("partial")
-    val text: String
+    val text: String,
+    val timestamp: Long = System.currentTimeMillis()
 ) {
     internal val asResult: Result
         get() = Result(

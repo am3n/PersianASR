@@ -7,7 +7,7 @@ import android.os.Looper
 import android.util.Log
 import androidx.annotation.IntDef
 import androidx.core.content.ContextCompat
-import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import ir.am3n.persian.asr.Utils.accessField
 import org.vosk.LibVosk
 import org.vosk.LogLevel
@@ -89,7 +89,9 @@ class PersianSpeechRecognizer private constructor(
 
     private lateinit var recognizer: Recognizer
     private lateinit var service: SpeechService
-    private val gson = Gson()
+    private val gson =  GsonBuilder()
+        .registerTypeAdapter(Partial::class.java, PartialDeserializer())
+        .create()
 
     @Volatile
     private var isCanceled = false
