@@ -46,3 +46,4 @@ and place it in your project assets folder with the name
 `asr-model` and then **clean & rebuild**.
 
 See the [sample app](https://github.com/am3n/PersianASR/tree/a060923df13aaa925b7be1e871e573698af091c7/app/src/main)
+
